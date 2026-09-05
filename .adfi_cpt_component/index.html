@@ -1,0 +1,133 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#fafafa;font-family:Arial,sans-serif}
+#app{box-sizing:border-box;width:100%;height:470px;border:1px solid #e5e7eb;border-radius:14px;background:#fff;position:relative;outline:none;user-select:none}
+#top{position:absolute;left:20px;right:20px;top:16px;display:flex;justify-content:space-between;font-size:14px;font-weight:600}
+#phase{color:#2563eb} #counter{color:#6b7280}
+#center{position:absolute;left:20px;right:20px;top:55px;bottom:60px;display:flex;align-items:center;justify-content:center}
+#message{text-align:center;color:#374151;font-size:25px;font-weight:700;line-height:1.5}
+#stimulus{width:140px;height:140px;display:none}
+#footer{position:absolute;left:0;right:0;bottom:16px;text-align:center;color:#9ca3af;font-size:14px}
+#status{position:absolute;left:20px;right:20px;bottom:42px;text-align:center;color:#6b7280;font-size:12px}
+.green{background:#10b981;border-radius:50%}.red{background:#ef4444;border-radius:50%}
+.square{background:#6b7280;border-radius:8px}.diamond{background:#6b7280;border-radius:8px;transform:rotate(45deg)}
+.triangle{width:0!important;height:0!important;border-left:70px solid transparent;border-right:70px solid transparent;border-bottom:140px solid #6b7280}
+.cross{width:140px;height:140px;display:flex;align-items:center;justify-content:center;color:#374151;font-size:125px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app" tabindex="0">
+ <div id="top"><div id="phase">Loading…</div><div id="counter"></div></div>
+ <div id="center"><div id="message">Loading assessment…</div><div id="stimulus"></div></div>
+ <div id="footer">Click this box once, then use SPACEBAR to respond.</div>
+ <div id="status"></div>
+</div>
+<script>
+(function(){
+  const app=document.getElementById("app"), phase=document.getElementById("phase"),
+        counter=document.getElementById("counter"), msg=document.getElementById("message"),
+        stim=document.getElementById("stimulus"), footer=document.getElementById("footer"),
+        status=document.getElementById("status");
+  let trials=[],results=[],idx=0,responded=false,running=false,finished=false,onsetPerf=0,stimTimer=null,intTimer=null;
+
+  function value(v){window.parent.postMessage({isStreamlitMessage:true,type:"streamlit:setComponentValue",value:v},"*")}
+  function height(){window.parent.postMessage({isStreamlitMessage:true,type:"streamlit:setFrameHeight",height:470},"*")}
+  function clearTimers(){if(stimTimer)clearTimeout(stimTimer);if(intTimer)clearTimeout(intTimer);stimTimer=intTimer=null}
+  function reset(){stim.className="";stim.style.display="none";stim.style.width="140px";stim.style.height="140px";stim.style.transform="none";stim.innerHTML=""}
+  function draw(s){
+    reset();stim.style.display="block";
+    if(s==="circle"||s==="green_circle")stim.className="green";
+    else if(s==="red_circle")stim.className="red";
+    else if(s==="square")stim.className="square";
+    else if(s==="diamond")stim.className="diamond";
+    else if(s==="triangle")stim.className="triangle";
+    else if(s==="cross"){stim.className="cross";stim.textContent="×"}
+  }
+  function phaseText(p){
+    if(p==="TRAINING")phase.textContent="TRAINING — Press SPACE for the green circle";
+    else if(p==="FOCUS")phase.textContent="FOCUS — Press SPACE for the green circle";
+    else if(p==="CONTROL")phase.textContent="CONTROL — Press SPACE for GREEN, ignore RED";
+    else phase.textContent="DISTRACTION — Press SPACE for the green circle";
+  }
+  function finishTrial(t){
+    if(!t.outcome||t.outcome==="pending"){
+      t.reaction_time=null;t.response_epoch=null;t.response_performance=null;
+      t.outcome=t.target?"omission":"correct_rejection";
+    }
+    results.push(t);idx++;
+    if(idx>=trials.length)finish();else next();
+  }
+  function next(){
+    if(finished)return;
+    clearTimers();
+    const t=trials[idx];responded=false;
+    t.outcome="pending";t.reaction_time=null;t.response_epoch=null;t.response_performance=null;
+    counter.textContent="Trial "+(idx+1)+" / "+trials.length;phaseText(t.phase);
+    msg.style.display="none";draw(t.stimulus);
+    requestAnimationFrame(function(){
+      if(finished)return;
+      t.stimulus_onset_epoch=Date.now()/1000;
+      t.stimulus_onset_performance=performance.now();
+      onsetPerf=t.stimulus_onset_performance;
+      stimTimer=setTimeout(function(){
+        stim.style.display="none";
+        if(!responded){
+          t.reaction_time=null;t.response_epoch=null;t.response_performance=null;
+          t.outcome=t.target?"omission":"correct_rejection";
+        }
+      },1500);
+      intTimer=setTimeout(function(){finishTrial(t)},Math.max(1500,Number(t.interval)*1000));
+    });
+  }
+  function key(e){
+    if(e.code!=="Space"||!running||finished||responded)return;
+    e.preventDefault();e.stopPropagation();
+    const now=performance.now(),rt=(now-onsetPerf)/1000;
+    if(rt<0.05||rt>1.50)return;
+    const t=trials[idx];responded=true;
+    t.response_epoch=Date.now()/1000;t.response_performance=now;t.reaction_time=rt;
+    t.outcome=t.target?"hit":"commission";stim.style.display="none";
+  }
+  function finish(){
+    if(finished)return;finished=true;running=false;clearTimers();
+    document.removeEventListener("keydown",key,true);window.removeEventListener("keydown",key,true);
+    reset();footer.style.display="none";msg.style.display="block";
+    msg.innerHTML="Assessment Complete!<br><span style='font-size:16px;font-weight:normal'>"+
+      results.length+" / "+trials.length+" trials completed.<br>Sending results to Streamlit…</span>";
+    status.textContent="Please wait — do not refresh the page.";
+    value({status:"completed",total_trials:results.length,results:results});
+  }
+  function start(){
+    if(running||finished)return;
+    if(!Array.isArray(trials)||trials.length!==480){msg.textContent="Protocol error: expected 480 trials.";return}
+    running=true;idx=0;results=[];app.focus();
+    let n=3;msg.textContent="Assessment starting in "+n+"…";
+    const timer=setInterval(function(){n--;if(n>0)msg.textContent="Assessment starting in "+n+"…";else{clearInterval(timer);next()}},1000);
+  }
+  function render(e){
+    if(!e.data||e.data.type!=="streamlit:render")return;
+    const a=e.data.args||{};
+    if(Array.isArray(a.trials))trials=a.trials;
+    height();if(!running&&!finished)start();
+  }
+  document.addEventListener("keydown",key,true);
+  window.addEventListener("keydown",key,true);
+  app.addEventListener("mousedown",function(){app.focus()});
+  app.addEventListener("click",function(){app.focus()});
+  window.addEventListener("message",render);
+  height();
+
+  // Tell Streamlit that the component is ready only after every
+  // event handler has been registered.
+  window.parent.postMessage({
+    isStreamlitMessage:true,
+    type:"streamlit:componentReady",
+    apiVersion:1
+  },"*");
+})();
+</script>
+</body>
+</html>

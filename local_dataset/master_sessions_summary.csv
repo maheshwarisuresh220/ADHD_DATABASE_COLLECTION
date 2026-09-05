@@ -1,0 +1,3 @@
+participant_id,session_id,group,session_valid,total_trials,scored_trials,hits,omissions,commissions,mean_rt_ms,rt_sd_ms,mean_velocity,mean_acceleration,movement_variance,gaze_deviations,total_blinks,invalid_intervals,total_frames,valid_pose_frames,valid_face_frames,valid_combined_frames,S_beh,S_perf
+P_1788617888,P_1788617888_20260905_191809_101664,Control,True,480,440,178,26,13,453.7277486911677,157.41873101382953,1.718546204672394,12.227027166336443,0.017058424637465347,378,113,18,8717,8679,8187,8185,422,29
+P000123,20,Male,Control,P000123_20260905_194929_114224,True,480,440,67,138,15,620.9158536586683,295.1199237308166,1.9275840530078314,14.390752845021668,0.023447007053503534,718,180,71,8510,8439,7377,7374,369,148
