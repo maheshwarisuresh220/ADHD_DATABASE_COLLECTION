@@ -1,0 +1,8 @@
+av
+opencv-python-headless
+numpy
+pandas
+streamlit
+streamlit-webrtc
+firebase-admin
+mediapipe
