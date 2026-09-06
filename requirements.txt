@@ -1,8 +1,9 @@
-av
+streamlit>=1.50,<2.0
+streamlit-webrtc==0.77.0
+mediapipe==1.0.1
+firebase-admin>=7.0,<8.0
+pandas>=2.2,<3.0
+numpy==2.2.6
+av>=15,<17
+openpyxl>=3.1,<4.0
 opencv-python-headless
-numpy
-pandas
-streamlit
-streamlit-webrtc
-firebase-admin
-mediapipe

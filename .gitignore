@@ -1,3 +1,4 @@
 myenv/
 *.mp4
 .env
+firebase_credentials.json
