@@ -1055,15 +1055,18 @@ tabs = st.tabs(["🧑‍💻 Participant Assessment", "🔐 Researcher Dashboard
 
 rtc_config = RTCConfiguration({
     "iceServers": [
-        {"urls": ["stun:stun.l.google.com:19302"]},
+        {"urls": ["stun:stun.relay.metered.ca:80"]},
         {
-            "urls": [st.secrets["turn"]["url"]],
-            "username": st.secrets["turn"]["username"],
-            "credential": st.secrets["turn"]["credential"],
+            "urls": [
+                "turn:standard.relay.metered.ca:80",
+                "turn:standard.relay.metered.ca:443",
+                "turn:standard.relay.metered.ca:443?transport=tcp"
+            ],
+            "username": "6344e69c1b5296726ff7e64c",
+            "credential": "+J3onsXxhRF6+uxe"
         }
     ]
 })
-
 # ============================================================
 # PARTICIPANT ASSESSMENT
 # ============================================================
