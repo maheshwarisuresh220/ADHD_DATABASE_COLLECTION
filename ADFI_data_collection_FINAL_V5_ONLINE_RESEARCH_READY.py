@@ -1055,17 +1055,30 @@ tabs = st.tabs(["🧑‍💻 Participant Assessment", "🔐 Researcher Dashboard
 
 rtc_config = RTCConfiguration({
     "iceServers": [
-        {"urls": ["stun:stun.relay.metered.ca:80"]},
-        {
-            "urls": [
-                "turn:standard.relay.metered.ca:80",
-                "turn:standard.relay.metered.ca:443",
-                "turn:standard.relay.metered.ca:443?transport=tcp"
-            ],
-            "username": "6344e69c1b5296726ff7e64c",
-            "credential": "+J3onsXxhRF6+uxe"
-        }
-    ]
+      {
+        "urls": "stun:stun.relay.metered.ca:80",
+      },
+      {
+        "urls": "turn:standard.relay.metered.ca:80",
+        "username": "e4173a00b2b1b08cdd57a387",
+        "credential": "QmCSqHVTtMotoHpO",
+      },
+      {
+        "urls": "turn:standard.relay.metered.ca:80?transport=tcp",
+        "username": "e4173a00b2b1b08cdd57a387",
+        "credential": "QmCSqHVTtMotoHpO",
+      },
+      {
+        "urls": "turn:standard.relay.metered.ca:443",
+        "username": "e4173a00b2b1b08cdd57a387",
+        "credential": "QmCSqHVTtMotoHpO",
+      },
+      {
+        "urls": "turns:standard.relay.metered.ca:443?transport=tcp",
+        "username": "e4173a00b2b1b08cdd57a387",
+        "credential": "QmCSqHVTtMotoHpO",
+      },
+  ],
 })
 # ============================================================
 # PARTICIPANT ASSESSMENT
